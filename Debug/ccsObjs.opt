@@ -1,0 +1,1 @@
+"./main.obj" "./tm4c123gh6pm_startup_ccs.obj" "./app/afproto/afproto.obj" "./app/afproto/crc16.obj" "./app/circular_buffer/circular_buffer.obj" "./app/data_handler/data_handler.obj" "./drivers/uart_rs232.obj" "../driverlib.lib" "../tm4c123gh6pm.cmd" -llibc.a 
