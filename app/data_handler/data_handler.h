@@ -3,7 +3,7 @@
 
 enum {Port0 =0,
     Port1,
-    Port2,Port3,Port4,Port5,Port6,Port7};
+    Port2,Port3,Port4,Port5,Port6,PortServer};
 
 void circ_buffer_init(void);
 void circ_buffer_process(void);

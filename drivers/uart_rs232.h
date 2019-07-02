@@ -13,6 +13,8 @@
 
 
 #define SerialBaudrate 115200
+
+
 void uart_rs232_init(void);
 void UART0_Config(void);
 void UART1_Config(void);
