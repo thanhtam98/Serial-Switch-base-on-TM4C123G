@@ -96,7 +96,7 @@ void circ_buffer_get(uint8_t port_t)
                                 Count[port_t] = 0;
                                 IsSending[port_t] = false;
                                 BufferFlag[port_t] = true;
-                                break;
+                                break;                         //when captured a frame, break loop to process this frame
                             }
                             else
                             {
