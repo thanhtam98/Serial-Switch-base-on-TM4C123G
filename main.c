@@ -13,7 +13,7 @@
 #include "drivers/uart_rs232.h"
 void main(void)
 {
-    SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_12MHZ);
+    SysCtlClockSet(SYSCTL_SYSDIV_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_12MHZ);
     uart_rs232_init();
     circ_buffer_init();
 

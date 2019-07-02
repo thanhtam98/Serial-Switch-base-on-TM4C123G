@@ -13,8 +13,11 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
+
 #define MAX_BUFFER_SIZE 1024
 #define TX_BUF_SIZE 100
+#define MAX_ERROR_LEN 50
+
 unsigned int write_len;
 int len;
 int i,j;
@@ -47,7 +50,7 @@ void circ_buffer_init(void)
 {
 
     int Port;
-    for ( Port = Port0 ; Port < PortServer  ; ++Port)
+    for ( Port = Port0 ; Port < PortServer + 1  ; Port++)
     {
         rawCircBuffer[Port]= (circBuf_t){
                           .buffer = rawBuffer[Port] ,
@@ -77,10 +80,10 @@ void circ_buffer_get(uint8_t port_t)
             uint8_t readByte;
             while( (circBufPop(&rawCircBuffer[port_t], &readByte) != -1) )  // loop until buffer is empty
             {
-                if(Count[port_t] > 100)
+                if(Count[port_t] > MAX_ERROR_LEN)
                     {
                         Count[port_t] = 0;
-                        break;
+//                        break;
                     }
                 ReadByte[port_t] = readByte;
                 if(IsSending[port_t]== true )
@@ -173,17 +176,18 @@ void circ_buffer_transmit(uint8_t port_t)
                 }
             }
         }
+        ClearRXBuffer(port_t);
+        BufferFlag[port_t] = false;
     }
 
-    ClearRXBuffer(port_t);
-    BufferFlag[port_t] = false;
+
 
 }
 void circ_buffer_process(void)
 {
     uint8_t Port;
 
-    for (Port = Port0 ; Port < PortServer; ++Port)
+    for (Port = Port0 ; Port < PortServer + 1 ; Port++)
     {
         circ_buffer_get(Port);
         circ_buffer_transmit(Port);
