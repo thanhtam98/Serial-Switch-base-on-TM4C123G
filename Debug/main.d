@@ -18,6 +18,8 @@ main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/pin_map.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/sysctl.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/uart.h
+main.obj: ../app/data_handler/data_handler.h
+main.obj: ../drivers/uart_rs232.h
 
 ../main.c: 
 C:/ti/ccs901/ccs/tools/compiler/ti-cgt-arm_18.12.1.LTS/include/stdint.h: 
@@ -37,3 +39,5 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h:
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/pin_map.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/sysctl.h: 
 C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/uart.h: 
+../app/data_handler/data_handler.h: 
+../drivers/uart_rs232.h: 

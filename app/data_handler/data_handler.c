@@ -13,13 +13,38 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
-
-unsigned int write_len;
-
 #define MAX_BUFFER_SIZE 1024
+#define TX_BUF_SIZE 100
+unsigned int write_len;
+int len;
+int i,j;
+int temp;
+int size;
+char BufferReply[7][2*TX_BUF_SIZE];
+char PayLoad[7][TX_BUF_SIZE];
 
  uint8_t rawBuffer[7][MAX_BUFFER_SIZE];
  circBuf_t rawCircBuffer[7];
+
+ bool IsSending_sever;
+ bool IsSending[7];
+
+ bool BufferFlag_sever;
+ bool BufferFlag[7];
+
+ volatile int Count_sever;
+ volatile int Count[7];
+
+ volatile int BufferLength_sever;
+ volatile int BufferLength[7];
+
+ volatile uint8_t ReadByte_sever;
+ volatile uint8_t ReadByte[7];
+
+ char RawBuffer_sever[TX_BUF_SIZE];
+ char RawBuffer[7][TX_BUF_SIZE];
+
+
 
 void circ_buffer_init(void)
 {
@@ -35,72 +60,87 @@ void circ_buffer_init(void)
         };
     }
 }
-
-void circ_buffer_process(void)
+void ClearRXBuffer(uint8_t port_t)
 {
-    int Port;
-    for (Port = Port0 ; Port < Port7; ++Port)
+    int i;
+    for (i=0; i<TX_BUF_SIZE; i++)
     {
-        char rawFrame[100];
-        char payLoad[100];
-        char repFrame[100];
-        int count = 0;
-        uint8_t readByte ;
-        bool IsSending = 0;
-        bool IsPackage = 0;
-        while( circBufPop(&rawCircBuffer[Port], &readByte) != -1)   // loop until buffer is empty
-        {
-            if(readByte == AFPROTO_START_BYTE)
+        RawBuffer[port_t][i]=0;
+    }
+}
+void circ_buffer_get(uint8_t port_t)
+{
+            uint8_t readByte;
+            while( circBufPop(&rawCircBuffer[port_t], &readByte) != -1)   // loop until buffer is empty
             {
-                rawFrame[count] = readByte;
-                count = 1;
-                IsPackage = 1;
-            }
-            if (IsPackage == 1)
-            {
-                if(readByte == AFPROTO_END_BYTE)
-                {
-                    rawFrame[count] = readByte;
-                    count ++;
-                    IsPackage = 0;
-                    IsSending = 1;
-                }
+                if(Count[port_t] > 100) Count[port_t] = 0;
+                ReadByte[port_t] = readByte;
+                if(IsSending[port_t]== true )
+                        {
+                            if(ReadByte[port_t]==AFPROTO_END_BYTE)
+                            {
+                                RawBuffer[port_t][Count[port_t]]=ReadByte[port_t];
+                                Count[port_t]++;
+                                BufferLength[port_t] = Count[port_t];
+                                Count[port_t] = 0;
+                                IsSending[port_t] = false;
+                                BufferFlag[port_t] = true;
+                            }
+                            else
+                            {
+                                RawBuffer[port_t][Count[port_t]]=ReadByte[port_t];
+                                Count[port_t]++;
+                            }
+                        }
                 else
-                {
-                    rawFrame[count] = readByte;
-                    count++;
-                }
+                        {
+                            if(ReadByte[port_t]==AFPROTO_START_BYTE)
+                            {
+                                IsSending[port_t] = true;
+                                RawBuffer[port_t][Count[port_t]] = ReadByte[port_t];
+                                Count[port_t]++;
+                            }
+                        }
+
 
             }
-            if(IsSending == 1)
+}
+void circ_buffer_transmit(uint8_t port_t)
+{
+    if(BufferFlag[port_t] == true)
+    {
+        for (size =0; size < BufferLength[port_t]; size++)
+        {
+            temp = afproto_get_data(RawBuffer[port_t], size, PayLoad[port_t], &write_len);
+        }
+        if (temp>0)
+        {
+            len = write_len;
+            PayLoad[port_t][1] = port_t;
+            for (i = 0; i < len; i++)
             {
-                uint8_t size;
-                uint8_t length;
-                int8_t temp = 0;
-                for (size = 0; size < count; size++)
-                {
-                    temp = afproto_get_data(rawFrame, size, payLoad, &write_len);
-                }
-                if(temp > 0)
-                {
-                    length = write_len;
-                    payLoad[1] = Port;
-                    uint8_t i;
-                    for (i = 0; i < length; i++)
-                    {
-                        afproto_frame_data(payLoad, length, repFrame, &write_len);
-                    }
-                    length = write_len +1;
-                    for (i = 0; i < length; i++)
-                    {
-                        UARTCharPut(SeverPort, repFrame[i]);
-                    }
-
-                }
-                IsSending = 0;
-                count = 0;
+                afproto_frame_data(PayLoad[port_t], len, BufferReply[port_t], &write_len);
+            }
+            len = write_len+1;
+            for (j = 0; j <len ; j++)
+            {
+                UARTCharPut(SeverPort,BufferReply[port_t][j]);
             }
         }
+    }
+    ClearRXBuffer(port_t);
+    BufferFlag[port_t] = false;
+
+}
+void circ_buffer_process(void)
+{
+    uint8_t Port;
+
+    for (Port = Port0 ; Port < Port7; ++Port)
+    {
+        circ_buffer_get(Port);
+        circ_buffer_transmit(Port);
+
 
     }
 }

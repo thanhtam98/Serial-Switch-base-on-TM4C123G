@@ -13,7 +13,17 @@
 #include "driverlib/uart.h"
 #include "driverlib/interrupt.h"
 
-
+void uart_rs232_init(void)
+{
+    UART0_Config();
+    UART1_Config();
+    UART2_Config();
+    UART3_Config();
+    UART4_Config();
+    UART5_Config();
+    UART6_Config();
+    UART7_Config();
+}
 void UART0_Config(void)
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
