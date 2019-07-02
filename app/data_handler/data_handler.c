@@ -1,6 +1,7 @@
 #include "data_handler.h"
 #include "drivers/uart_rs232.h"
 #include "app/circular_buffer/circular_buffer.h"
+#include "app/afproto/afproto.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -13,6 +14,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 
+unsigned int write_len;
 
 #define MAX_BUFFER_SIZE 1024
 
@@ -39,11 +41,65 @@ void circ_buffer_process(void)
     int Port;
     for (Port = Port0 ; Port < Port7; ++Port)
     {
-        uint8_t rawFrame[100];
-        int data = 0;
-        while( circBufPop(rawCircBuffer[Port], rawFrame[data]) != -1)   // loop until buffer is empty
+        char rawFrame[100];
+        char payLoad[100];
+        char repFrame[100];
+        int count = 0;
+        uint8_t readByte ;
+        bool IsSending = 0;
+        bool IsPackage = 0;
+        while( circBufPop(&rawCircBuffer[Port], &readByte) != -1)   // loop until buffer is empty
         {
+            if(readByte == AFPROTO_START_BYTE)
+            {
+                rawFrame[count] = readByte;
+                count = 1;
+                IsPackage = 1;
+            }
+            if (IsPackage == 1)
+            {
+                if(readByte == AFPROTO_END_BYTE)
+                {
+                    rawFrame[count] = readByte;
+                    count ++;
+                    IsPackage = 0;
+                    IsSending = 1;
+                }
+                else
+                {
+                    rawFrame[count] = readByte;
+                    count++;
+                }
 
+            }
+            if(IsSending == 1)
+            {
+                uint8_t size;
+                uint8_t length;
+                int8_t temp = 0;
+                for (size = 0; size < count; size++)
+                {
+                    temp = afproto_get_data(rawFrame, size, payLoad, &write_len);
+                }
+                if(temp > 0)
+                {
+                    length = write_len;
+                    payLoad[1] = Port;
+                    uint8_t i;
+                    for (i = 0; i < length; i++)
+                    {
+                        afproto_frame_data(payLoad, length, repFrame, &write_len);
+                    }
+                    length = write_len +1;
+                    for (i = 0; i < length; i++)
+                    {
+                        UARTCharPut(SeverPort, repFrame[i]);
+                    }
+
+                }
+                IsSending = 0;
+                count = 0;
+            }
         }
 
     }
