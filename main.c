@@ -11,6 +11,7 @@
 
 #include "app/data_handler/data_handler.h"
 #include "drivers/uart_rs232.h"
+
 void main(void)
 {
     SysCtlClockSet(SYSCTL_SYSDIV_5 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_12MHZ);

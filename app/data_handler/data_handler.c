@@ -96,7 +96,7 @@ void circ_buffer_get(uint8_t port_t)
                                 Count[port_t] = 0;
                                 IsSending[port_t] = false;
                                 BufferFlag[port_t] = true;
-                                break;                         //when captured a frame, break loop to process this frame
+                                break;                         //when captured a frame, break a loop to process this frame
                             }
                             else
                             {
@@ -120,7 +120,8 @@ void circ_buffer_transmit(uint8_t port_t)
 {
     if(BufferFlag[port_t] == true)
     {
-        for (size =0; size < BufferLength[port_t]; size++)
+        size = BufferLength[port_t]-1;
+
         {
             temp = afproto_get_data(RawBuffer[port_t], size, PayLoad[port_t], &write_len);
         }
@@ -129,7 +130,7 @@ void circ_buffer_transmit(uint8_t port_t)
             if(port_t == PortServer)
             {
                 len = write_len;
-                for (i = 0; i < len; i++)
+
                 {
                     afproto_frame_data(PayLoad[port_t], len, BufferReply[port_t], &write_len);
                 }
@@ -165,7 +166,7 @@ void circ_buffer_transmit(uint8_t port_t)
             {
                 len = write_len;
                 PayLoad[port_t][1] = port_t;
-                for (i = 0; i < len; i++)
+
                 {
                     afproto_frame_data(PayLoad[port_t], len, BufferReply[port_t], &write_len);
                 }
@@ -195,6 +196,15 @@ void circ_buffer_process(void)
 
 }
 
+
+
+///////////////////// HW Interrupt Handler ////////////////
+/* 
+    The code below push data received in Uart port to
+    circular buffer and waiting for processing.
+    Each buffer has 1024 bytes to store data, it is  
+    about 2k frames. When buffer is full, all next frames will lost!
+ */
 
 void SeverIntHandler(void) //Uart0
 {

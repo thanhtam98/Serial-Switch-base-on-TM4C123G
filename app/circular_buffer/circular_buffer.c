@@ -10,7 +10,7 @@
      int next  = c-> head +1;
      if (next >= c-> maxLen)
          next = 0;
-     if (next == c->tail)
+     if (next == c->tail)  //buffer is full
          return -1;
 
      c->buffer[c->head] = data;
