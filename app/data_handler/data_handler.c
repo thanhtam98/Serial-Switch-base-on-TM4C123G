@@ -16,7 +16,7 @@
 
 #define MAX_BUFFER_SIZE 1024
 #define TX_BUF_SIZE 100
-#define MAX_ERROR_LEN 50
+#define MAX_ERROR_LEN 120
 
 unsigned int write_len;
 int len;
