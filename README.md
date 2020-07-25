@@ -1,6 +1,5 @@
-# TM4C_UART2RS232_Switching
+# Serial-Switch-base-on-TM4C123G
 
-#UART Hub
 
 Focused on communitcaion between server and 7 clients via RS232 port.
 Data is stored into circular buffer, decoded to check failure and encoded before send to another port.
